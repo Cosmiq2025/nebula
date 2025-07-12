@@ -1,371 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nebula - Your On-Chain Story</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
-
-    <style>
-      /* --- Base Styles --- */
-      body { font-family: 'Inter', sans-serif; background-color: #f8fafc; /* Softer background */ }
-      .hero-section { background-image: url('https://public.readdy.ai/ai/img_res/fa7891bfb46cef6965c10bb7b67a49ec.jpg'); background-size: cover; background-position: center right; }
-      input:focus { outline: none; }
-      .text-primary { color: #ff4d8d; } .bg-primary { background-color: #ff4d8d; }
-      /* --- Animations & Effects --- */
-      @keyframes letterByLetter { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
-      #textNebula { display: inline-block; } #textNebula span { opacity: 0; display: inline-block; animation: letterByLetter 1s forwards; animation-delay: calc(0.1s * var(--i)); }
-      #track-address-btn .ri-loader-2-line { display: none; } #track-address-btn.loading #button-text { display: none; } #track-address-btn.loading .ri-loader-2-line { display: inline-block; animation: spin 1s linear infinite; }
-      #feedback { opacity: 0; transition: opacity 0.3s ease-in-out; min-height: 1.25rem; } #feedback.show { opacity: 1; }
-      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      /* --- Component Styles --- */
-      .info-box { background-color: #ffffff; border-radius: 0.75rem; padding: 1rem; display: flex; align-items: center; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.03); min-height: 90px; transition: transform 0.2s ease-out; } .info-box:hover { transform: translateY(-2px); }
-      .info-box-icon { font-size: 1.75rem; margin-right: 0.75rem; color: #6b7280; flex-shrink: 0; width: 40px; text-align: center; } .info-box-icon i { line-height: 1; }
-      .info-box-content { flex-grow: 1; } .info-box-title { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.1rem; font-weight: 500; } .info-box-value { font-size: 1.1rem; font-weight: 600; color: #1f2937; line-height: 1.3; } #streak-info-box .info-box-value { font-size: 0.9rem; line-height: 1.4; margin-bottom: 0.1rem; } .info-box-desc { font-size: 0.8rem; color: #4b5563; }
-      /* FEATURE: Chain Story Box Style */
-      #chain-story-box { background-image: linear-gradient(to right, #eef2ff, #f3e8ff, #fce7f3); border-radius: 0.75rem; /* rounded-xl -> rounded-lg */ }
-      /* FEATURE: Value Ranking Style */
-      #value-ranking { text-align: center; background-color: #ffffff; padding: 1.25rem 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); } #value-ranking .rank-char { font-size: 2.5rem; line-height: 1; margin-bottom: 0.25rem; } #value-ranking .rank-name { font-size: 1.1rem; font-weight: 600; color: #1f2937; } #value-ranking .rank-desc { font-size: 0.8rem; color: #6b7280; }
-      /* FEATURE: Table Header & Action Buttons Style */
-      .table-header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 0.5rem;} .table-header-controls h4 { margin-bottom: 0; } .action-buttons { display: flex; gap: 0.5rem; }
-      .action-btn { color: white; font-size: 0.8rem; font-weight: 500; padding: 0.3rem 0.8rem; border-radius: 0.5rem; transition: background-color 0.2s; cursor: pointer; display: inline-flex; align-items: center;} .action-btn i { margin-right: 0.25rem; vertical-align: -0.1em; font-size: 1rem;}
-      #download-csv-btn { background-color: #10b981; } #download-csv-btn:hover { background-color: #059669; }
-      #share-twitter-btn { background-color: #1DA1F2; } #share-twitter-btn:hover { background-color: #0c85d0; }
-      #download-csv-btn.hidden, #share-twitter-btn.hidden { display: none; } #txn-table-controls.hidden { display: none; } #transaction-data-area.hidden { display: none; }
-      /* Table Styles */
-      #results-table, #gas-by-dapp-table { border-collapse: separate; border-spacing: 0; width: 100%; } #results-table th, #results-table td, #gas-by-dapp-table th, #gas-by-dapp-table td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 0.85rem; vertical-align: middle; white-space: nowrap; } #results-table th, #gas-by-dapp-table th { background-color: #f9fafb; font-weight: 600; color: #374151; position: sticky; top: 0; z-index: 10; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
-      #results-table th:first-child, #gas-by-dapp-table th:first-child { border-top-left-radius: 0.75rem; } #results-table th:last-child, #gas-by-dapp-table th:last-child { border-top-right-radius: 0.75rem; } #results-table tr:last-child td:first-child, #gas-by-dapp-table tr:last-child td:first-child { border-bottom-left-radius: 0.75rem; } #results-table tr:last-child td:last-child, #gas-by-dapp-table tr:last-child td:last-child { border-bottom-right-radius: 0.75rem; } #results-table tr:last-child td, #gas-by-dapp-table tr:last-child td { border-bottom: 0; }
-      #results-table tbody tr:nth-child(even), #gas-by-dapp-table tbody tr:nth-child(even) { background-color: #ffffff; } #results-table tbody tr:nth-child(odd), #gas-by-dapp-table tbody tr:nth-child(odd) { background-color: #f8fafc; } #results-table tbody tr:hover, #gas-by-dapp-table tbody tr:hover { background-color: #eff6ff; }
-      #results-table tbody tr.highlight-first td { border-top: 2px solid #a855f7; } #results-table tbody tr.highlight-last td { border-bottom: 2px solid #a855f7 !important; } #results-table tbody tr.highlight-last td:first-child { border-bottom-left-radius: 0; } #results-table tbody tr.highlight-last td:last-child { border-bottom-right-radius: 0; }
-      #results-table td .action-icon { font-size: 1.1rem; margin-right: 0.4em; vertical-align: -0.15em; display: inline-block; } #results-table td .action-label { display: none; }
-      .interaction-col { white-space: normal; min-width: 200px; } .interaction-col .addr-link { display: inline-block; vertical-align: middle; } .interaction-col .flow-arrow { margin: 0 0.4em; vertical-align: middle; color: #9ca3af; font-size: 0.9em;} .interaction-col .self-arrow { color: #a855f7; } .dapp-icon { width: 1em; height: 1em; vertical-align: -0.15em; margin-right: 0.3em; display: inline-block; }
-      .addr-link, .etherscan-link { color: #3b82f6; text-decoration: none; font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; transition: color 0.15s ease-in-out; } .addr-link:hover, .etherscan-link:hover { color: #1d4ed8; text-decoration: underline; }
-      .value-col { text-align: right; font-size: 0.85rem; } .notes-col { text-align: center; font-size: 1rem; }
-      .table-container { max-height: 75vh; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nebula - Your On-Chain Story</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #eef2f7; margin: 0; }
+    .btn { background: #1da1f2; color: #fff; padding: 0.75rem 1.5rem; border-radius: 0.5rem; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; border: none; position: relative; }
+    .btn:hover { background: #0d8de1; }
+    #track-address-btn .ri-loader-2-line { display: none; position: absolute; }
+    #track-address-btn.loading .ri-loader-2-line { display: inline-block; animation: spin 1s linear infinite; }
+    #track-address-btn.loading #button-text { visibility: hidden; }
+    @keyframes spin { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+    .period-btn { background: #fff; border: 1px solid #cbd5e0; color: #4a5568; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background 0.2s, color 0.2s; cursor: pointer; }
+    .period-btn:hover { background: #f3f4f6; }
+    .period-btn.bg-primary { background: #1da1f2 !important; color: #fff !important; border-color: #1da1f2 !important; }
+    .info-box { background: #fff; border: 1px solid #cbd5e0; border-radius: 0.75rem; padding: 1rem; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s; margin-bottom: 1rem; }
+    .info-box:hover { transform: translateY(-2px); }
+    .info-box-icon { font-size: 1.75rem; margin-right: 0.75rem; color: #4a5568; width: 40px; text-align: center; }
+    .info-box-title { font-size: 0.75rem; color: #718096; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .info-box-value { font-size: 1.25rem; font-weight: 600; color: #2d3748; /* allow wrap */ white-space: normal; word-break: break-all; }
+    table td a { color: #1da1f2; word-break: break-all; }
+    table th, table td { padding: 0.75rem 1rem; border-bottom: 1px solid #cbd5e0; font-size: 0.85rem; }
+    table th { background: #f7fafc; font-weight: 600; text-transform: uppercase; }
+  </style>
 </head>
-<body class="bg-slate-100 min-h-screen"> <header class="w-full py-4 px-6 md:px-8 bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
-       <div class="max-w-7xl mx-auto flex justify-between items-center">
-         <a href="#" class="text-primary text-3xl font-bold tracking-wide" style="font-family: 'Pacifico', cursive;">Nebula</a>
-         <nav class="flex items-center gap-5 text-sm md:text-base font-medium text-gray-700"> <a href="#" class="hover:text-primary transition-colors duration-150 ease-out px-3 py-1">Docs</a>
-           <a href="#" class="hover:text-primary transition-colors duration-150 ease-out px-3 py-1"><i class="ri-twitter-x-line text-lg"></i></a>
-           </nav>
-       </div>
-    </header>
-
-    <section class="hero-section w-full py-16 md:py-24">
-        <div class="w-full max-w-7xl mx-auto px-4 md:px-8 flex flex-col items-center">
-         <div class="max-w-3xl text-center mb-10"> <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-2">Unravel Your On-Chain Story</h1> <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6"> with <span id="textNebula" class="text-primary" style="font-family: 'Pacifico', cursive;">Nebula</span> </h2> </div>
-          <section class="w-full max-w-xl bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 p-6 md:p-8"> <div class="w-full mx-auto">
-                  <div class="mb-5"> <label for="wallet-address-input" class="block text-sm font-medium text-gray-700 mb-1.5"> Your Wallet Address </label> <input type="text" id="wallet-address-input" placeholder="e.g. 0x1234...5678" class="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-primary focus:outline-none shadow-sm text-base"> </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5"> <div> <label for="chain-select" class="block text-sm font-medium text-gray-700 mb-1.5">Which Blockchain?</label> <select id="chain-select" class="w-full border border-gray-300 bg-white text-gray-800 rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary shadow-sm appearance-none"> <option value="ethereum">Ethereum</option> <option value="optimism" selected>Optimism</option> <option value="base">Base</option> </select> </div> <div> <label for="time-period" class="block text-sm font-medium text-gray-700 mb-1.5">How Far Back?</label> <select id="time-period" class="w-full border border-gray-300 bg-white text-gray-800 rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary shadow-sm appearance-none"> <option value="1">Last Month</option> <option value="3">Last 3 Months</option> <option value="6">Last 6 Months</option> <option value="12">Last Year</option> </select> </div> </div>
-                  <button id="track-address-btn" class="w-full bg-primary text-white font-semibold py-3.5 rounded-lg hover:bg-pink-600 transition relative flex items-center justify-center shadow-md hover:shadow-lg active:scale-[0.99]"> <i class="ri-loader-2-line text-white text-2xl absolute"></i> <span id="button-text">Tell My Story!</span> </button>
-                  <div id="feedback" class="mt-4 text-sm text-center"></div>
-             </div>
-           </section>
-       </div>
+<body class="flex flex-col min-h-screen">
+  <header class="bg-white shadow sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex flex-wrap items-center justify-between py-4 gap-4">
+      <div class="flex items-center space-x-4">
+        <a href="#" class="text-primary text-3xl font-bold" style="font-family:'Pacifico',cursive;">Nebula</a>
+        <p class="text-xs text-gray-500">Public tool for Abstract users. We don’t collect any data.</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <a href="https://abscan.org/address/0x372EdBa0FAF5d3090aD285E6D88beB30F3c76D19" target="_blank" class="btn text-sm py-2 px-3">
+          <i class="ri-currency-bitcoin-line"></i> Donate
+        </a>
+        <a href="https://x.com/Internfud" target="_blank" class="text-primary text-2xl p-2 rounded hover:bg-gray-100">
+          <i class="ri-twitter-line"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+  <section class="hero flex-grow">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 flex flex-col items-center text-center py-12">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Discover Your Abstract Adventure</h1>
+      <p class="text-gray-700 mb-6">Explore Abstract chain’s Penguin Parade 🐧❄️ and frost badges!</p>
+      <div class="w-full bg-white/90 backdrop-blur-md rounded-xl shadow-lg border p-6 flex flex-col space-y-4">
+        <input id="wallet-address-input" type="text" placeholder="0x... wallet address" class="w-full bg-white border border-gray-400 text-gray-900 placeholder-gray-500 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"/>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
+          <div id="time-period-controls" class="flex flex-wrap gap-2 justify-center">
+            <button data-value="1" class="period-btn">Last Month</button>
+            <button data-value="3" class="period-btn">Last 3 Months</button>
+            <button data-value="6" class="period-btn">Last 6 Months</button>
+            <button data-value="12" class="period-btn">Last Year</button>
+          </div>
+          <button id="track-address-btn" class="btn relative w-full sm:w-auto">
+            <i class="ri-loader-2-line text-lg"></i>
+            <span id="button-text">Tell My Story!</span>
+          </button>
+        </div>
+        <div id="feedback" class="text-center text-sm text-gray-600 min-h-[1.25rem]"></div>
+      </div>
+    </div>
+  </section>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pb-12">
+    <section id="results-section" class="hidden">
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0 mb-4">
+        <button id="download-csv-btn" class="btn"><i class="ri-download-2-line"></i> Download CSV</button>
+        <button id="share-results-btn" class="btn"><i class="ri-twitter-line"></i> Share Results</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="info-box"><i class="ri-calendar-event-line info-box-icon"></i><div><div class="info-box-title">Time Span</div><div id="summary-period" class="info-box-value">--</div></div></div>
+        <div class="info-box"><i class="ri-flashlight-line info-box-icon"></i><div><div class="info-box-title">Busiest Day</div><div id="summary-busiest-day" class="info-box-value">--</div><div id="summary-busiest-count" class="text-gray-500 text-xs">-- txns</div></div></div>
+        <div class="info-box"><i class="ri-heart-fill info-box-icon text-primary"></i><div><div class="info-box-title">Favorite Contract</div><div id="summary-fav-dapp" class="info-box-value"><a id="fav-link" href="#" target="_blank" class="text-primary">--</a></div><div id="summary-fav-count" class="text-gray-500 text-xs">-- interactions</div></div></div>
+        <div class="info-box"><i class="ri-fire-line info-box-icon"></i><div><div class="info-box-title">Activity Streak</div><div id="streak-daily" class="info-box-value text-sm">Daily:--</div><div id="streak-weekly" class="info-box-value text-sm">Weekly:--</div><div id="streak-monthly" class="info-box-value text-sm">Monthly:--</div></div></div>
+      </div>
+      <div id="chain-info" class="mb-6"></div>
+      <div class="info-box mb-6"><i class="ri-alert-line info-box-icon text-red-500"></i><div><div class="info-box-title">Suspicious Flags</div><div id="suspicious-flags" class="info-box-value text-red-600">--</div><div class="text-gray-500 text-xs">Tiny repetitive TXs indicate airdrop farming</div></div></div>
+      <div class="overflow-x-auto mb-6 shadow rounded-lg">
+        <table class="min-w-full">
+          <thead class="bg-gray-100">
+            <tr>
+              <th>When</th><th>Action</th><th>To</th><th>ETH</th><th>USD</th><th>Notes</th><th>Link</th>
+            </tr>
+          </thead>
+          <tbody id="results-table-body" class="bg-white"></tbody>
+        </table>
+      </div>
+      <div class="info-box"><i class="ri-lightbulb-line info-box-icon"></i><div><div class="info-box-title">Quirky Stats</div><div id="quirky-stats" class="info-box-value text-sm">--</div></div></div>
     </section>
+  </main>
+  <footer class="mt-auto text-center py-4 text-gray-400 text-xs">© 2025 Nebula • Current time: <span id="current-time"></span></footer>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      let currentFilteredTxs = [];
+      const trackButton = document.getElementById('track-address-btn');
+      const walletInput = document.getElementById('wallet-address-input');
+      const feedbackEl = document.getElementById('feedback');
+      const summaryPeriod = document.getElementById('summary-period');
+      const summaryBusiestDay = document.getElementById('summary-busiest-day');
+      const summaryBusiestCount = document.getElementById('summary-busiest-count');
+      const summaryFavDapp = document.getElementById('summary-fav-dapp');
+      const favLink = document.getElementById('fav-link');
+      const summaryFavCount = document.getElementById('summary-fav-count');
+      const streakDaily = document.getElementById('streak-daily');
+      const streakWeekly = document.getElementById('streak-weekly');
+      const streakMonthly = document.getElementById('streak-monthly');
+      const chainInfo = document.getElementById('chain-info');
+      const suspiciousFlags = document.getElementById('suspicious-flags');
+      const resultsTableBody = document.getElementById('results-table-body');
+      const quirkyStats = document.getElementById('quirky-stats');
+      const currentTime = document.getElementById('current-time');
+      const downloadBtn = document.getElementById('download-csv-btn');
+      const shareResultsBtn = document.getElementById('share-results-btn');
 
-     <main class="w-full max-w-7xl mx-auto px-4 md:px-8 pb-16">
-        <section id="results-section" class="w-full hidden mt-12">
+      const CHAIN_ID = 2741;
+      const API_KEY = '72P2UIIGKTH83TSC5M94UJPR5WBI49TQDM';
+      const BASE_URL = 'https://api.etherscan.io/v2/api';
 
-             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div id="period-summary-box" class="info-box hidden"> <div class="info-box-icon"><i class="ri-calendar-event-line"></i></div> <div class="info-box-content"> <div class="info-box-title">Time Travel Log</div> <div id="summary-period" class="info-box-value">--</div> <div id="summary-txns" class="info-box-desc">-- transactions</div> </div> </div>
-                <div id="activity-highlight-box" class="info-box hidden"> <div class="info-box-icon"><i class="ri-flashlight-line"></i></div> <div class="info-box-content"> <div class="info-box-title">Busiest Day</div> <div id="summary-busiest-day" class="info-box-value">--</div> <div id="summary-busiest-count" class="info-box-desc">-- transactions</div> </div> </div>
-                <div id="favorite-dapp-box" class="info-box hidden"> <div class="info-box-icon"><i class="ri-heart-fill text-primary"></i></div> <div class="info-box-content"> <div class="info-box-title">Your Favorite Spot</div> <div id="summary-fav-dapp" class="info-box-value">--</div> <div id="summary-fav-count" class="info-box-desc">-- interactions</div> </div> </div>
-                <div id="streak-info-box" class="info-box hidden"> <div class="info-box-icon"><i class="ri-fire-line"></i></div> <div class="info-box-content"> <div class="info-box-title">Activity Streaks</div> <div id="streak-daily" class="info-box-value text-sm">Daily: -- days</div> <div id="streak-weekly" class="info-box-value text-sm">Weekly: -- weeks</div> <div id="streak-monthly" class="info-box-value text-sm">Monthly: -- months</div> </div> </div>
-             </div>
+      let selectedPeriod = 1;
+      document.querySelectorAll('.period-btn').forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('bg-primary','text-white'));
+        btn.classList.add('bg-primary','text-white');
+        selectedPeriod = parseInt(btn.dataset.value);
+      }));
+      document.querySelector('.period-btn')?.classList.add('bg-primary','text-white');
 
-             <div id="chain-story-box" class="hidden mb-6 p-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-purple-200 rounded-xl text-center text-sm text-purple-900 shadow-sm">
-                 </div>
+      function showFeedback(msg,type='info'){
+        feedbackEl.textContent=msg;
+        feedbackEl.className=type==='error'?'text-red-600':'text-primary';
+      }
+      function formatETH(v){return v.toFixed(4);} function formatUSD(v){return '$'+(v*3000).toFixed(2);}      
+      function isConsecutiveDay(a,b){const d1=new Date(a),d2=new Date(b);return d1.getTime()+86400000===d2.getTime();}
+      function getStreak(days){const u=[...new Set(days)].sort();let m=0,c=0;u.forEach((d,i)=>{if(i>0&&isConsecutiveDay(u[i-1],d))c++;else c=1;m=Math.max(m,c);} );return m;}
 
-             <div id="value-ranking" class="hidden"> <div class="rank-char">?</div> <div class="rank-name">Calculating your vibe...</div> <div class="rank-desc">Based on outgoing value + gas in the selected period.</div>
-             </div>
-
-             <div id="results-output" class="p-6 text-center text-gray-500 hidden"> <p>Let's see what you've been up to...</p> </div>
-
-             <div id="transaction-data-area" class="hidden">
-                 <div class="table-header-controls" id="txn-table-controls">
-                     <h4 class="text-xl font-semibold text-gray-700">Transaction History</h4>
-                     <div class="action-buttons">
-                         <button id="share-twitter-btn" class="action-btn hidden" title="Share Rank on X"> <i class="ri-twitter-x-line"></i> Share Rank </button>
-                         <button id="download-csv-btn" class="action-btn hidden" title="Download transactions as CSV"> <i class="ri-download-2-line"></i>Download CSV </button>
-                     </div>
-                 </div>
-                 <div class="table-container"> <table id="results-table" class="min-w-full"> <thead> <tr> <th>When</th> <th>Action</th> <th>Interaction</th> <th class="value-col">Value (Native)</th> <th class="value-col">Value (USD)</th> <th class="notes-col">Notes</th> <th>Proof (Txn Hash)</th> </tr> </thead> <tbody id="results-table-body"></tbody> </table> </div>
-             </div>
-
-             <div id="gas-by-dapp-section" class="mt-8 hidden">
-                 <h4 class="text-xl font-semibold text-gray-700 mb-3 text-center">Gas Guzzlers (Top dApps by Gas)</h4>
-                 <div class="table-container"> <table id="gas-by-dapp-table" class="min-w-full"> <thead> <tr> <th class="w-12">Rank</th> <th>dApp</th> <th class="text-center">Txns</th> <th class="value-col">Total Gas (ETH)</th> <th class="value-col">Total Gas (USD)</th> <th class="value-col">Avg Fee (USD)</th> </tr> </thead> <tbody id="gas-by-dapp-tbody"></tbody> </table> <div id="gas-by-dapp-nodata" class="p-4 text-center text-gray-500 hidden">Could not determine gas usage per dApp.</div> </div>
-             </div>
-
-             <div id="sybil-disclaimer" class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800 hidden"> <h4 class="font-semibold mb-1"><i class="ri-alert-line align-middle mr-1"></i>Heads-up on Flags (🚩, 🔥)</h4> <p>Flags might appear for tiny transfers (🚩...) or pricey gas fees (🔥...). They're hints, not judgments!</p> </div>
-
-             <div class="mt-6 text-center text-sm text-gray-500"> <i class="ri-sparkling-2-line align-middle"></i> Your on-chain story changes all the time! Check back later to see what's new. </div>
-
-        </section>
-    </main>
-
-    <footer class="w-full py-10 bg-gray-800 text-white mt-12">
-       <div class="w-full max-w-7xl mx-auto px-8 text-center">
-            <a href="#" class="text-3xl font-['Pacifico'] text-white mb-4 inline-block">Nebula</a>
-            <p class="text-gray-400 text-sm mb-2">Making blockchain less cryptic, one transaction at a time.</p>
-            <p class="text-sm text-gray-500 mt-2">Nebula is built as a public good for the web3 community.</p>
-            <div class="flex justify-center space-x-4 my-4"> <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors"><i class="ri-github-line text-xl"></i></a> <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors"><i class="ri-twitter-x-line text-xl"></i></a> </div>
-            <p class="text-gray-500 text-xs">© <span id="footer-year">2025</span> Nebula. All rights reserved. Current time is approx: <span id="current-time"></span></p>
-       </div>
-    </footer>
-
-    <script>
-      // --- Configuration ---
-      const API_KEYS = { ethereum: "YOUR_ETHERSCAN_API_KEY", optimism: "MHAA6GCGVZWVMJXZT88MK5DFZH7NNA1TT6", base: "YOUR_BASESCAN_API_KEY" };
-      const EXPLORER_API_URLS = { ethereum: "https://api.etherscan.io/api", optimism: "https://api-optimistic.etherscan.io/api", base: "https://api.basescan.org/api" };
-      const EXPLORER_WEB_URLS = { ethereum: "https://etherscan.io/tx/", optimism: "https://optimistic.etherscan.io/tx/", base: "https://basescan.org/tx/" };
-      const ADDRESS_EXPLORER_URLS = { ethereum: "https://etherscan.io/address/", optimism: "https://optimistic.etherscan.io/address/", base: "https://basescan.org/address/" };
-      const COINGECKO_IDS = { ethereum: 'ethereum', optimism: 'ethereum', base: 'ethereum' };
-      const COINGECKO_API_BASE = "https://api.coingecko.com/api/v3";
-      const DAPP_CONTRACTS = {
-          'optimism': { '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45': { name: "Uniswap V3", icon: "🦄" }, '0x7a250d5630b4cf539739df2c5dacb4c659f2488d': { name: "Uniswap V2", icon: "🦄" }, '0xdef1c0ded9bec7f1a1670819833240f027b25eff': { name: "0x Protocol", icon: "⚫" }, },
-          'ethereum': { '0x7a250d5630b4cf539739df2c5dacb4c659f2488d': { name: "Uniswap V2", icon: "🦄" }, '0x00000000006c3852cbef3e08e8df289169ede581': { name: "OpenSea Seaport", icon: "⛵" }, }, 'base': {}
-      };
-      const VALUE_RANKING_LEVELS = [
-          { limit: 0.1, name: 'Pocket Lint Pete', char: '🤏', desc: "Just testing the waters... or lost a bet?" }, { limit: 1, name: 'Casual Spender Carla', char: '💸', desc: "Making a few moves here and there." }, { limit: 10, name: 'DeFi Dabbler Dave', char: '😎', desc: "Exploring the crypto playground!" }, { limit: 100, name: 'Serious Player Sarah', char: '🔥', desc: "Actively shaping their on-chain world." }, { limit: Infinity, name: 'Blockchain Baron Bob', char: '🎩', desc: "A true whale in the making!" }
-      ];
-      const GWEI_WEI = BigInt(1e9); const ETH_WEI = BigInt(1e18); const MIN_ETH_VALUE_FOR_SYBIL_FLAG = 0.0001; const HIGH_GAS_USD_THRESHOLD = 50; const TOP_DAPPS_TO_SHOW = 5;
-      const CHAIN_STORIES = { ethereum: "Ah, Ethereum Mainnet! 💎 Where legends are made, gas fees bite, and digital cats once reigned supreme. Hope your journey wasn't *too* expensive!", optimism: "Cruising on Optimism! ✨ Enjoying those speedy L2 vibes and optimistic rollups. Did you catch any RetroPGF rounds or cool quests?", base: "Onchain Summer on Base! 🔵 Building, memeing, painting... or maybe all three? Keep the blue chain buzzing!", default: "Exploring the blockchainverse! Each chain has its own quirks and treasures. What will you discover?" };
-
-      // --- Element References ---
-      const trackButton = document.getElementById('track-address-btn'); const walletInput = document.getElementById('wallet-address-input'); const chainSelect = document.getElementById('chain-select'); const timeSelect = document.getElementById('time-period'); const feedbackEl = document.getElementById('feedback'); const resultsSection = document.getElementById('results-section'); const resultsOutput = document.getElementById('results-output'); const transactionDataArea = document.getElementById('transaction-data-area'); const resultsTable = document.getElementById('results-table'); const resultsTableBody = document.getElementById('results-table-body'); const valueRankingDiv = document.getElementById('value-ranking'); const shareTwitterBtn = document.getElementById('share-twitter-btn'); const txnTableControls = document.getElementById('txn-table-controls'); const downloadCsvBtn = document.getElementById('download-csv-btn'); const sybilDisclaimer = document.getElementById('sybil-disclaimer'); const gasByDappSection = document.getElementById('gas-by-dapp-section'); const gasByDappTbody = document.getElementById('gas-by-dapp-tbody'); const gasByDappNodata = document.getElementById('gas-by-dapp-nodata'); const periodSummaryBox = document.getElementById('period-summary-box'); const activityHighlightBox = document.getElementById('activity-highlight-box'); const favoriteDappBox = document.getElementById('favorite-dapp-box'); const streakInfoBox = document.getElementById('streak-info-box'); const summaryPeriod = document.getElementById('summary-period'); const summaryTxns = document.getElementById('summary-txns'); const summaryBusiestDay = document.getElementById('summary-busiest-day'); const summaryBusiestCount = document.getElementById('summary-busiest-count'); const summaryFavDapp = document.getElementById('summary-fav-dapp'); const summaryFavCount = document.getElementById('summary-fav-count'); const streakDaily = document.getElementById('streak-daily'); const streakWeekly = document.getElementById('streak-weekly'); const streakMonthly = document.getElementById('streak-monthly'); const footerTime = document.getElementById('current-time'); const chainStoryBox = document.getElementById('chain-story-box');
-
-      // Global vars
-      let currentProcessedTransactions = []; let currentRanking = null; let currentChain = ''; let currentAddressShort = ''; let nativeCoinId = 'ethereum';
-
-      // --- Nebula Text Animation & Footer Year/Time ---
-      window.onload = function () {
-           console.log("[Init] window.onload triggered.");
-           try { // Animation Logic
-               const text = document.getElementById('textNebula')?.innerText; const container = document.getElementById('textNebula');
-               if (text && container) { container.innerHTML = ''; text.split('').forEach((letter, index) => { const span = document.createElement('span'); span.innerText = letter === ' ' ? '\u00A0' : letter; span.style.setProperty('--i', index); span.style.display = 'inline-block'; container.appendChild(span); }); console.log("[Init] Animation spans created."); }
-               else { console.warn("[Init] Animation container/text not found.");}
-           } catch (e) { console.error("[Init] Animation Error:", e); }
-           try { // Footer Logic
-               const yearEl = document.getElementById('footer-year'); if(yearEl) yearEl.textContent = new Date().getFullYear();
-               if(footerTime) { footerTime.textContent = new Date().toLocaleTimeString(); } else { console.warn("[Init] Footer time element not found.");}
-           } catch(e) { console.error("[Init] Footer Error:", e); }
-           console.log("[Init] window.onload finished.");
-      };
-
-      // --- Helper Functions (Full Implementations) ---
-      const priceCache = new Map();
-      async function fetchHistoricalPrice(coinId, dateString_ddmmyyyy) { const cacheKey = `${coinId}-${dateString_ddmmyyyy}`; if (priceCache.has(cacheKey)) return priceCache.get(cacheKey); await new Promise(resolve => setTimeout(resolve, 150)); try { const url = `${COINGECKO_API_BASE}/coins/${coinId}/history?date=${dateString_ddmmyyyy}&localization=false`; const response = await fetch(url); if (!response.ok) { console.warn(`CoinGecko Error (${response.status}) for ${coinId} on ${dateString_ddmmyyyy}.`); if (response.status === 429) await new Promise(resolve => setTimeout(resolve, 3000)); return null; } const data = await response.json(); const price = data?.market_data?.current_price?.usd; const finalPrice = (price !== undefined && price !== null) ? price : null; priceCache.set(cacheKey, finalPrice); return finalPrice; } catch (error) { console.error(`Error fetching price:`, error); priceCache.set(cacheKey, null); return null; } }
-      function formatCurrency(value) { if (value === null || value === undefined || isNaN(value)) return null; return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-      function formatEthValue(value) { if (value === null || value === undefined || isNaN(value) || value === 0) return '-'; if (value < 1e-6 && value > 0) return `< 0.000001`; if (value < 0.01) return value.toFixed(8); if (value < 1) return value.toFixed(6); return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }); }
-      function shortenAddress(address, length = 4) { if (!address || typeof address !== 'string' || address.length < (length * 2 + 2)) return address || 'N/A'; return `${address.substring(0, length + 2)}...${address.substring(address.length - length)}`; }
-      function getExplorerLink(chain, hash, type = 'tx') { const baseUrls = type === 'address' ? ADDRESS_EXPLORER_URLS : EXPLORER_WEB_URLS; const baseUrl = baseUrls[chain]; return baseUrl && hash ? `${baseUrl}${hash}` : '#'; }
-      function resolveDappName(address, chain) { if (!address) return null; const lowerAddr = address.toLowerCase(); const chainContracts = DAPP_CONTRACTS[chain]; if (chainContracts && chainContracts[lowerAddr]) { return chainContracts[lowerAddr]; } return null; }
-       function showFeedback(message, type = 'success') { if(!feedbackEl) { console.error("Feedback element not found in showFeedback"); return; } let funnyPrefix = ""; if (type === 'loading') { const msgs = ["Consulting the blockchain gnomes...", "Wrangling rogue transactions...", "Decoding ancient runes (on-chain)...", "Asking the mempool nicely...", "Firing up the flux capacitor..."]; funnyPrefix = msgs[Math.floor(Math.random() * msgs.length)] + "<br>"; } else if (type === 'success') { const msgs = ["Boom! Story told.", "Voilà! The blockchain speaks.", "Success! Like finding ETH under the couch.", "Done! Your blockchain diary awaits.", "All sorted!"]; funnyPrefix = msgs[Math.floor(Math.random() * msgs.length)] + " "; } else if (type === 'error') { funnyPrefix = "Blast! "; } feedbackEl.innerHTML = funnyPrefix + message; feedbackEl.className = 'mt-4 text-sm text-center transition-opacity duration-300 ease-in-out '; feedbackEl.classList.add(type === 'error' ? 'text-red-600' : (type === 'warning' ? 'text-yellow-600' : (type === 'loading' ? 'text-blue-600' : 'text-green-600'))); feedbackEl.classList.add('show'); if (type !== 'loading') { setTimeout(() => { feedbackEl.classList.remove('show'); }, type === 'error' ? 6000 : 4000); } }
-      function addDays(date, days) { const result = new Date(date); result.setDate(result.getDate() + days); return result; }
-      function isConsecutiveDay(dateStr1, dateStr2) { try { const d1 = new Date(dateStr1 + 'T00:00:00Z'); const next = addDays(d1, 1); return next.toISOString().split('T')[0] === dateStr2; } catch (e) { console.error("isConsecutiveDay error", e); return false; } }
-      function getWeekId(date) { try { const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); const dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum); const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7); return `${d.getUTCFullYear()}-${weekNo.toString().padStart(2, '0')}`; } catch (e) { console.error("getWeekId error", e); return null; }}
-      function isConsecutiveWeek(weekId1, weekId2) { if (!weekId1 || !weekId2) return false; try { const [y1, w1] = weekId1.split('-').map(Number); const [y2, w2] = weekId2.split('-').map(Number); if (y1 === y2) return w2 === w1 + 1; if (y2 === y1 + 1) { const weeksInYear1CheckDate = new Date(Date.UTC(y1, 11, 31)); const weeksInYear1 = weeksInYear1CheckDate ? parseInt(getWeekId(weeksInYear1CheckDate)?.split('-')[1] || '52', 10) : 52; return (w1 === weeksInYear1 || w1 === 52 || w1 === 53) && w2 === 1;} return false; } catch (e) { console.error("isConsecutiveWeek error", e); return false; } }
-      function getMonthId(date) { try { const y = date.getFullYear(); const m = (date.getMonth() + 1).toString().padStart(2, '0'); return `${y}-${m}`; } catch (e) { console.error("getMonthId error", e); return null; }}
-      function isConsecutiveMonth(monthId1, monthId2) { if (!monthId1 || !monthId2) return false; try { const [y1, m1] = monthId1.split('-').map(Number); const [y2, m2] = monthId2.split('-').map(Number); if (y1 === y2) return m2 === m1 + 1; if (y2 === y1 + 1) return m1 === 12 && m2 === 1; return false; } catch (e) { console.error("isConsecutiveMonth error", e); return false; } }
-      function calculateLongestStreak(sortedUniqueItems, isConsecutiveFunc) { if (!sortedUniqueItems || sortedUniqueItems.length === 0) return 0; let longest = 0; let current = 0; for (let i = 0; i < sortedUniqueItems.length; i++) { if (i > 0 && sortedUniqueItems[i-1] && sortedUniqueItems[i] && isConsecutiveFunc(sortedUniqueItems[i-1], sortedUniqueItems[i])) { current++; } else { current = 1; } longest = Math.max(longest, current); } return longest; }
-
-      // --- CSV Download Function ---
-       function escapeCsvCell(cellData) { if (cellData === null || cellData === undefined) return ''; const stringData = String(cellData); if (stringData.includes(',') || stringData.includes('\n') || stringData.includes('"')) { const escapedData = stringData.replace(/"/g, '""'); return `"${escapedData}"`; } return stringData; }
-       function downloadCSV() {
-           if (!currentProcessedTransactions || currentProcessedTransactions.length === 0) { showFeedback("No transaction data to download!", "warning"); return; }
-           console.log("[Action] Generating CSV...");
-           const headers = ['Timestamp (Unix)', 'Date (Local)', 'Action', 'From Address', 'To Address / Contract', 'DApp Name', 'Value (Native)', 'Value (USD Estimate)', 'Txn Fee (Native)', 'Txn Fee (USD Estimate)', 'Flags', 'Txn Hash', 'Block Number'];
-           const rows = currentProcessedTransactions.map(pData => { const priceUsd = nativeCoinId ? priceCache.get(`${pData.dateString_ddmmyyyy}`) : null; const valueUsd = (priceUsd !== null && pData.valueNative > 0) ? pData.valueNative * priceUsd : null; const txnFeeEth = Number(pData.txnFeeWei) / Number(ETH_WEI); const txnFeeUsd = priceUsd !== null ? txnFeeEth * priceUsd : null; return [ pData.tx.timeStamp, pData.date.toLocaleString(), pData.actionLabel, pData.tx.from, pData.interactionTarget, pData.dappInfo?.name || '', pData.valueNative, valueUsd !== null ? valueUsd.toFixed(2) : '', txnFeeEth.toFixed(8), txnFeeUsd !== null ? txnFeeUsd.toFixed(2) : '', pData.flags.replace(/<[^>]*>/g, ''), pData.tx.hash, pData.tx.blockNumber ].map(escapeCsvCell).join(','); });
-           try { const csvContent = [headers.join(','), ...rows].join('\n'); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); const filename = `nebula_export_${currentAddressShort}_${new Date().toISOString().split('T')[0]}.csv`; link.setAttribute("download", filename); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); console.log("[Action] CSV download initiated."); } catch (e) { console.error("Error generating/downloading CSV:", e); showFeedback("Failed to generate download.", "error"); }
-       }
-
-       // --- Twitter Share Function ---
-       function shareToTwitter() {
-           if (!currentRanking || !currentChain) { console.warn("No ranking/chain data to share."); return; }
-            const text = `Just explored my ${currentChain} story with Nebula! 😎 My on-chain vibe? Currently a ${currentRanking.name} ${currentRanking.char}! Check yours out:`;
-            const nebulaUrl = window.location.href; // Share current page URL
-            const hashtags = `Blockchain,${currentChain.charAt(0).toUpperCase() + currentChain.slice(1)},NebulaApp,Crypto`;
-            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(nebulaUrl)}&hashtags=${encodeURIComponent(hashtags)}`;
-            window.open(twitterUrl, '_blank'); console.log("[Action] Opening Twitter share intent.");
-       }
-
-
-      // --- Main Display Function ---
-      // Uses addrParam internally, receives 'address' from listener call
-      async function displayAnalysis(transactions, chain, addrParam) {
-          console.log('[Debug] displayAnalysis Start.');
-          if (!addrParam || typeof addrParam !== 'string') { console.error("[Debug] Invalid addrParam!"); showFeedback("Internal error: Missing address.", "error"); return; }
-          console.log('[Debug] displayAnalysis processing for:', addrParam);
-
-          // Explicit Reset for Display
-          resultsSection.classList.remove('hidden'); resultsOutput.classList.add('hidden'); transactionDataArea.classList.add('hidden'); gasByDappSection.classList.add('hidden'); valueRankingDiv.classList.add('hidden'); sybilDisclaimer.classList.add('hidden'); chainStoryBox.classList.add('hidden');
-          [periodSummaryBox, activityHighlightBox, favoriteDappBox, streakInfoBox].forEach(box => box?.classList.add('hidden'));
-          resultsTableBody.innerHTML = ''; gasByDappTbody.innerHTML = '';
-          currentProcessedTransactions = []; currentRanking = null;
-
-          // Handle No Transactions
-          if (!transactions || transactions.length === 0) {
-              console.log("[Debug] Entering ZERO transaction block.");
-              resultsOutput.innerHTML = '<p class="text-gray-500 text-center p-6">Looks like this wallet\'s been chilling...🧘 No transactions found for this period.</p>';
-              resultsOutput.classList.remove('hidden'); // Show only the output message div
-              showFeedback('Found nothing in this period!', 'success');
-              console.log("[Debug] Returning from zero-tx block.");
-              return;
-          }
-
-          // Handle > 0 Transactions
-          console.log("[Debug] Proceeding with > 0 transaction analysis.");
-          showFeedback('Consulting the on-chain archives...', 'loading');
-
-          // Analysis Variables
-          nativeCoinId = COINGECKO_IDS[chain]; let latestTxnDateString_ddmmyyyy = null; let potentialSybilFlags = 0; let highGasFlags = 0; let totalOutgoingValueWei = BigInt(0); let totalGasSpentWei = BigInt(0); const addrParamLower = addrParam.toLowerCase(); let gasByDapp = {}; let txnsPerDay = {}; let uniqueTxnDates = new Set(); let uniqueTxnWeeks = new Set(); let uniqueTxnMonths = new Set();
-          currentChain = chain; currentAddressShort = shortenAddress(addrParam);
-
-          // Main Transaction Processing Loop
-          for (const tx of transactions) {
-               const timestamp = parseInt(tx.timeStamp); const date = new Date(timestamp * 1000); const dateString_yyyymmdd = date.toISOString().split('T')[0]; const dateString_ddmmyyyy = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
-               if (!latestTxnDateString_ddmmyyyy) latestTxnDateString_ddmmyyyy = dateString_ddmmyyyy;
-               uniqueTxnDates.add(dateString_yyyymmdd); uniqueTxnWeeks.add(getWeekId(date)); uniqueTxnMonths.add(getMonthId(date)); txnsPerDay[dateString_yyyymmdd] = (txnsPerDay[dateString_yyyymmdd] || 0) + 1;
-               const isOutgoing = tx.from?.toLowerCase() === addrParamLower; const isIncoming = tx.to?.toLowerCase() === addrParamLower; const valueNative = parseFloat(tx.value) / 1e18; const txnFeeWei = BigInt(tx.gasUsed) * BigInt(tx.gasPrice); totalGasSpentWei += txnFeeWei; if (isOutgoing) totalOutgoingValueWei += BigInt(tx.value);
-               let actionLabel = 'Interacted'; let actionIcon = 'ri-computer-line'; const isError = tx.isError === '1'; let interactionTarget = tx.to || tx.contractAddress; let dappInfo = interactionTarget ? resolveDappName(interactionTarget, chain) : null;
-                if (isError) { actionLabel = 'Failed'; actionIcon = 'ri-emotion-unhappy-line'; } else if (tx.contractAddress) { actionLabel = 'Deployed'; actionIcon = 'ri-rocket-line'; } else if (isOutgoing && !isIncoming) { if (dappInfo && dappInfo.name.includes("Uniswap")) { actionLabel = 'Swapped'; actionIcon = 'ri-swap-line'; } else if (dappInfo) { actionLabel = 'Used dApp'; actionIcon = 'ri-apps-2-line'; } else if (valueNative > 0) { actionLabel = 'Sent ETH'; actionIcon = 'ri-send-plane-line'; } else { actionLabel = 'Called Contract'; actionIcon = 'ri-terminal-box-line'; } } else if (isIncoming && !isOutgoing) { if (valueNative > 0) { actionLabel = 'Received ETH'; actionIcon = 'ri-hand-coin-line'; } else { actionLabel = 'Got Call/NFT?'; actionIcon = 'ri-questionnaire-line'; } } else if (isIncoming && isOutgoing) { actionLabel = 'Self Transfer'; actionIcon = 'ri-loop-left-line';}
-               let flags = ''; if (!isError && actionLabel === 'Sent ETH' && valueNative > 0 && valueNative < MIN_ETH_VALUE_FOR_SYBIL_FLAG) { flags += `<span title="Tiny transfer - maybe for Sybil farming?">🚩</span>`; potentialSybilFlags++; }
-               currentProcessedTransactions.push({ tx, date, dateString_ddmmyyyy, actionLabel, actionIcon, valueNative, interactionTarget, dappInfo, flags, txnFeeWei });
-          }
-
-          // Fetch Prices
-          const uniqueDates = [...new Set(currentProcessedTransactions.map(p => p.dateString_ddmmyyyy))];
-          showFeedback(`Analyzing ${transactions.length} txns! Getting price data...`, 'loading');
-          await Promise.all(uniqueDates.map(dateStr => fetchHistoricalPrice(nativeCoinId, dateStr)));
-
-          // Calculate Value Ranking
-          const totalActivityValueEth = (Number(totalOutgoingValueWei) + Number(totalGasSpentWei)) / Number(ETH_WEI);
-          currentRanking = VALUE_RANKING_LEVELS.find(l => totalActivityValueEth <= l.limit) || VALUE_RANKING_LEVELS[VALUE_RANKING_LEVELS.length - 1];
-          valueRankingDiv.querySelector('.rank-char').textContent = currentRanking.char; valueRankingDiv.querySelector('.rank-name').textContent = currentRanking.name; valueRankingDiv.querySelector('.rank-desc').textContent = currentRanking.desc;
-
-          // Loop again for USD calcs, Gas Aggregation, Final Flags
-           highGasFlags = 0; gasByDapp = {};
-           for (let i = 0; i < currentProcessedTransactions.length; i++) {
-                const pData = currentProcessedTransactions[i]; const priceUsd = nativeCoinId ? priceCache.get(`${pData.dateString_ddmmyyyy}`) : null; const txnFeeEth = Number(pData.txnFeeWei) / Number(ETH_WEI); const txnFeeUsd = priceUsd !== null ? txnFeeEth * priceUsd : null;
-                // Aggregate Gas
-                if (pData.tx.isError !== '1') { const dappName = pData.dappInfo ? pData.dappInfo.name : '(Other Contracts)'; const dappIcon = pData.dappInfo ? pData.dappInfo.icon : '❓'; if (!gasByDapp[dappName]) gasByDapp[dappName] = { eth: 0, usd: 0, count: 0, icon: dappIcon }; gasByDapp[dappName].eth += txnFeeEth; if (txnFeeUsd !== null) gasByDapp[dappName].usd += txnFeeUsd; gasByDapp[dappName].count++; }
-                // High Gas Flag
-                if (pData.tx.isError !== '1' && txnFeeUsd !== null && txnFeeUsd > HIGH_GAS_USD_THRESHOLD) { pData.flags += `<span title="Spicy gas fee! ~${formatCurrency(txnFeeUsd)}">🔥</span>`; highGasFlags++; }
-                currentProcessedTransactions[i].flags = pData.flags; // Update flags in the main array
-           }
-
-          // Process & Sort Gas by dApp Data
-          let sortedDapps = Object.entries(gasByDapp).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.usd - a.usd || b.eth - a.eth);
-
-          // Calculate Info Box Data (incl. Streaks)
-            const numTxns = transactions.length; const firstTxnDate = numTxns > 0 ? new Date(parseInt(transactions[transactions.length - 1].timeStamp) * 1000) : null; const lastTxnDate = numTxns > 0 ? new Date(parseInt(transactions[0].timeStamp) * 1000) : null;
-            summaryPeriod.textContent = firstTxnDate && lastTxnDate ? `${firstTxnDate.toLocaleDateString()} - ${lastTxnDate.toLocaleDateString()}` : 'N/A'; summaryTxns.textContent = `${numTxns} transaction${numTxns !== 1 ? 's' : ''}`; periodSummaryBox?.classList.remove('hidden');
-            let busiestDay = '--'; let maxTxns = 0; for (const [day, count] of Object.entries(txnsPerDay)) { if (count > maxTxns) { maxTxns = count; busiestDay = new Date(day + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } } summaryBusiestDay.textContent = busiestDay; summaryBusiestCount.textContent = `${maxTxns} transaction${maxTxns !== 1 ? 's' : ''}`; activityHighlightBox?.classList.remove('hidden');
-            let favDappName = '--'; let favDappCount = 0; let favDappIcon = '❓'; const sortedByCount = [...sortedDapps].sort((a, b) => b.count - a.count); if (sortedByCount.length > 0 && sortedByCount[0].name !== '(Other Contracts)') { favDappName = sortedByCount[0].name; favDappCount = sortedByCount[0].count; favDappIcon = sortedByCount[0].icon; } else if (sortedByCount.length > 0) { favDappName = "Various Contracts"; favDappCount = sortedByCount[0].count; } summaryFavDapp.innerHTML = `<span class="dapp-icon">${favDappIcon}</span> ${favDappName}`; summaryFavCount.textContent = `${favDappCount} interaction${favDappCount !== 1 ? 's' : ''}`; favoriteDappBox?.classList.remove('hidden');
-            const sortedDays = Array.from(uniqueTxnDates).sort(); const sortedWeeks = Array.from(uniqueTxnWeeks).sort(); const sortedMonths = Array.from(uniqueTxnMonths).sort(); const longestDailyStreak = calculateLongestStreak(sortedDays, isConsecutiveDay); const longestWeeklyStreak = calculateLongestStreak(sortedWeeks, isConsecutiveWeek); const longestMonthlyStreak = calculateLongestStreak(sortedMonths, isConsecutiveMonth); streakDaily.textContent = `Daily: ${longestDailyStreak} day${longestDailyStreak !== 1 ? 's' : ''}`; streakWeekly.textContent = `Weekly: ${longestWeeklyStreak} week${longestWeeklyStreak !== 1 ? 's' : ''}`; streakMonthly.textContent = `Monthly: ${longestMonthlyStreak} month${longestMonthlyStreak !== 1 ? 's' : ''}`;
-            if (longestDailyStreak > 1 || longestWeeklyStreak > 1 || longestMonthlyStreak > 1) { streakInfoBox?.classList.remove('hidden'); } else { streakInfoBox?.classList.add('hidden'); }
-
-          // Render & Show Relevant Sections for >0 Txns
-          resultsOutput.classList.add('hidden');
-          chainStoryBox.textContent = CHAIN_STORIES[chain] || CHAIN_STORIES.default; chainStoryBox.classList.remove('hidden'); // FEATURE: Chain Story Logic
-          valueRankingDiv.classList.remove('hidden'); // Show ranking div
-
-          // Render Main Transaction Table
-           resultsTableBody.innerHTML = '';
-           for (let i = 0; i < currentProcessedTransactions.length; i++) {
-                const pData = currentProcessedTransactions[i]; const priceUsd = nativeCoinId ? priceCache.get(`${pData.dateString_ddmmyyyy}`) : null; const valueUsd = (priceUsd !== null && pData.valueNative > 0) ? pData.valueNative * priceUsd : null; const row = document.createElement('tr'); let interactionHtml = '';
-                // Interaction HTML logic using addrParamLower and addrParam
-                 const fromAddrShort = shortenAddress(pData.tx.from); const fromLink = `<a href="${getExplorerLink(chain, pData.tx.from, 'address')}" target="_blank" rel="noopener noreferrer" class="addr-link" title="${pData.tx.from}">${fromAddrShort}</a>`; const targetAddrShort = shortenAddress(pData.interactionTarget); const targetLink = `<a href="${getExplorerLink(chain, pData.interactionTarget, 'address')}" target="_blank" rel="noopener noreferrer" class="addr-link" title="${pData.interactionTarget || 'N/A'}">${targetAddrShort || (pData.actionLabel === 'Deployed' ? 'New Contract' : '???')}</a>`; const dappDisplay = pData.dappInfo ? `<a href="${getExplorerLink(chain, pData.interactionTarget, 'address')}" target="_blank" rel="noopener noreferrer" class="addr-link" title="Contract: ${pData.interactionTarget}"> <span class="dapp-icon">${pData.dappInfo.icon || ''}</span>${pData.dappInfo.name} </a>` : targetLink; const isOutgoing = pData.tx.from?.toLowerCase() === addrParamLower; const isIncoming = pData.tx.to?.toLowerCase() === addrParamLower;
-                 if (isOutgoing && isIncoming) interactionHtml = `<span class="addr-link" title="${addrParam}">You</span> <i class="ri-loop-left-line flow-arrow self-arrow"></i> <span class="addr-link" title="${addrParam}">You</span>`; else if (isOutgoing) interactionHtml = `<span class="addr-link" title="${addrParam}">You</span> <i class="ri-arrow-right-line flow-arrow"></i> ${dappDisplay}`; else if (isIncoming) interactionHtml = `${fromLink} <i class="ri-arrow-right-line flow-arrow"></i> <span class="addr-link" title="${addrParam}">You</span>`; else interactionHtml = `${fromLink} <i class="ri-arrow-right-line flow-arrow"></i> ${dappDisplay}`;
-                 row.innerHTML = ` <td>${pData.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${pData.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</td> <td title="${pData.actionLabel}"> <i class="${pData.actionIcon} action-icon"></i> </td> <td class="interaction-col">${interactionHtml}</td> <td class="value-col">${formatEthValue(pData.valueNative)}</td> <td class="value-col">${formatCurrency(valueUsd) || (pData.valueNative > 0 ? '-' : '~ $0.00')}</td> <td class="notes-col">${pData.flags || ''}</td> <td title="View on Explorer: ${pData.tx.hash}"> <a href="${getExplorerLink(chain, pData.tx.hash, 'tx')}" target="_blank" rel="noopener noreferrer" class="etherscan-link"> ${shortenAddress(pData.tx.hash, 3)} <i class="ri-external-link-line text-xs align-baseline"></i> </a> </td> `;
-               if (i === 0) row.classList.add('highlight-first'); if (i === currentProcessedTransactions.length - 1) row.classList.add('highlight-last'); resultsTableBody.appendChild(row);
-           }
-           transactionDataArea.classList.remove('hidden'); // Show table area
-           if(currentProcessedTransactions.length > 0) { txnTableControls.classList.remove('hidden'); downloadCsvBtn.classList.remove('hidden'); if (currentRanking) shareTwitterBtn.classList.remove('hidden'); } // Show controls/buttons
-
-           // Render Gas by dApp Table
-           gasByDappTbody.innerHTML = '';
-           if (sortedDapps.length > 0) { sortedDapps.slice(0, TOP_DAPPS_TO_SHOW).forEach((dapp, index) => { const avgUsd = dapp.count > 0 && dapp.usd > 0 ? dapp.usd / dapp.count : 0; const row = document.createElement('tr'); row.innerHTML = `<td class="text-center">${index + 1}</td> <td><span class="dapp-icon">${dapp.icon}</span> ${dapp.name}</td> <td class="text-center">${dapp.count}</td> <td class="value-col">${dapp.eth.toFixed(5)}</td> <td class="value-col">${formatCurrency(dapp.usd) || '-'}</td> <td class="value-col">${formatCurrency(avgUsd) || '-'}</td>`; gasByDappTbody.appendChild(row); }); gasByDappSection.classList.remove('hidden'); gasByDappNodata.classList.add('hidden'); }
-           else { gasByDappSection.classList.add('hidden'); }
-
-          // Show Disclaimers
-          if (potentialSybilFlags > 0 || highGasFlags > 0) { sybilDisclaimer.classList.remove('hidden'); }
-
-          // Final UI Feedback
-          showFeedback(`Voilà! Your blockchain diary.`, 'success');
+      async function fetchTransactions(address){
+        const url=`${BASE_URL}?chainid=${CHAIN_ID}&module=account&action=txlist&address=${encodeURIComponent(address)}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${API_KEY}`;
+        const r=await fetch(url);if(!r.ok)throw new Error(`HTTP ${r.status}`);
+        const d=await r.json();if(d.status!=='1')throw new Error(d.message||'API error');return d.result;
       }
 
+      async function displayAnalysis(txs){
+        const now=Math.floor(Date.now()/1000);
+        const startTs=now-selectedPeriod*30.44*24*3600;
+        const filtered=txs.filter(t=>parseInt(t.timeStamp)>=startTs);
+        currentFilteredTxs=filtered;
 
-      // --- Main Event Listener ---
-      trackButton.addEventListener('click', async () => {
-         console.log("Track button clicked!");
-         // Get elements needed for reset/error handling *inside* listener scope
-         // Re-declare refs inside listener scope for safety
-         const resultsSection = document.getElementById('results-section'); const resultsOutput = document.getElementById('results-output'); const transactionDataArea = document.getElementById('transaction-data-area'); const gasByDappSection = document.getElementById('gas-by-dapp-section'); const valueRankingDiv = document.getElementById('value-ranking'); const sybilDisclaimer = document.getElementById('sybil-disclaimer'); const chainStoryBox = document.getElementById('chain-story-box'); const periodSummaryBox = document.getElementById('period-summary-box'); const activityHighlightBox = document.getElementById('activity-highlight-box'); const favoriteDappBox = document.getElementById('favorite-dapp-box'); const streakInfoBox = document.getElementById('streak-info-box'); const txnTableControls = document.getElementById('txn-table-controls'); const downloadCsvBtn = document.getElementById('download-csv-btn'); const shareTwitterBtn = document.getElementById('share-twitter-btn');
-         const resultsTableBody = document.getElementById('results-table-body'); const gasByDappTbody = document.getElementById('gas-by-dapp-tbody'); // Needed for reset
+        const dates=filtered.map(t=>new Date(t.timeStamp*1000));
+        const days=dates.map(d=>d.toISOString().split('T')[0]);
+        const counts=days.reduce((o,d)=>{o[d]=(o[d]||0)+1;return o;},{});
+        const busiest=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]||['N/A',0];
+        summaryPeriod.textContent=`${selectedPeriod} mo`;
+        summaryBusiestDay.textContent=busiest[0];summaryBusiestCount.textContent=busiest[1];
 
-         try {
-             // Reset UI using locally scoped element variables with checks
-             feedbackEl.textContent = ''; feedbackEl.classList.remove('show'); if(resultsSection) resultsSection.classList.add('hidden');
-             if(resultsOutput) { resultsOutput.innerHTML = '<p class="text-gray-500 text-center p-6">Let\'s see what you\'ve been up to...</p>'; resultsOutput.classList.remove('hidden'); } // Show initial message placeholder
-             if(transactionDataArea) transactionDataArea.classList.add('hidden'); if(gasByDappSection) gasByDappSection.classList.add('hidden'); if(valueRankingDiv) valueRankingDiv.classList.add('hidden'); if(sybilDisclaimer) sybilDisclaimer.classList.add('hidden'); if(chainStoryBox) chainStoryBox.classList.add('hidden');
-             [periodSummaryBox, activityHighlightBox, favoriteDappBox, streakInfoBox].forEach(box => box?.classList.add('hidden'));
-             if(txnTableControls) txnTableControls.classList.add('hidden'); if(downloadCsvBtn) downloadCsvBtn.classList.add('hidden'); if(shareTwitterBtn) shareTwitterBtn.classList.add('hidden');
-             if(resultsTableBody) resultsTableBody.innerHTML = ''; if(gasByDappTbody) gasByDappTbody.innerHTML = '';
-             priceCache.clear(); currentProcessedTransactions = []; currentRanking = null;
+        const toCounts=filtered.reduce((o,t)=>{o[t.to]=(o[t.to]||0)+1;return o;},{});
+        const fav=Object.entries(toCounts).sort((a,b)=>b[1]-a[1])[0]||['N/A',0];
+        summaryFavDapp.textContent=fav[0];
+        favLink.href = `https://abscan.org/address/${fav[0]}`; // updated to ABScan // Abstract explorer
+        summaryFavCount.textContent=fav[1];
 
-             // Get Inputs & Validate
-             const address = walletInput.value.trim(); const chain = chainSelect.value; const months = parseInt(timeSelect.value);
-             if (!address) { showFeedback('Need a wallet address!', 'error'); return; }
-             const apiKey = API_KEYS[chain]; if (!apiKey || apiKey.startsWith('YOUR_')) { showFeedback(`Need a working API Key for ${chain} in the code!`, 'error'); return; }
+        const streak=getStreak(days);
+        streakDaily.textContent=`Daily: ${streak}`;
+        streakWeekly.textContent=`Weekly: ${Math.floor(streak/7)}`;
+        streakMonthly.textContent=`Monthly: ${Math.floor(streak/30)}`;
 
-             // Loading
-             trackButton.disabled = true; trackButton.classList.add('loading'); showFeedback('Warming up the flux capacitor...', 'loading');
+        const totalGas=filtered.reduce((s,t)=>s+(parseFloat(t.gasUsed)*parseFloat(t.gasPrice))/1e18,0);
+        const unique=new Set(filtered.map(t=>t.to)).size;
+        chainInfo.innerHTML=`🐧 Abstract chain Penguin Parade!<br>⛽ ${totalGas.toFixed(4)} ETH gas<br>📦 ${unique} contracts`;
 
-             // API Call & Filtering
-             const endTime = Math.floor(Date.now() / 1000); const startTime = endTime - (months * 30.44 * 24 * 60 * 60);
-             const url = `${EXPLORER_API_URLS[chain]}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${apiKey}`;
-             console.log(`Workspaceing URL: ${url}`); const response = await fetch(url); if (!response.ok) { throw new Error(`Network hiccup: ${response.status} ${response.statusText}`); }
-             const data = await response.json(); console.log("API Response:", data);
-             let filteredTxns = [];
-             // API response filtering logic...
-              if (data.status === '0') { if (data.message === 'No transactions found' || data.result?.includes('Invalid address format') || data.message === "Query Timeout" || data.message === "NOTOK" ) { filteredTxns = []; } else { throw new Error(`API says nope: ${data.message || data.result || 'Unknown error'}`); } }
-              else if (data.status === '1' && data.result && Array.isArray(data.result)) { filteredTxns = data.result.filter(tx => { const ts = parseInt(tx.timeStamp); return !isNaN(ts) && ts >= startTime && ts <= endTime; }); }
-              else if (data.status === '1' && data.message?.includes('No transactions found')) { filteredTxns = []; }
-              else { throw new Error("Weird response from the API."); }
-             filteredTxns.sort((a, b) => parseInt(b.timeStamp) - parseInt(a.timeStamp));
+        const tiny=filtered.filter(t=>parseFloat(t.value)/1e18<0.0001).length;
+        suspiciousFlags.textContent=tiny?`🚩 ${tiny}`:'None';
 
-             // Call analysis using the 'address' variable which becomes 'addrParam' inside
-             await displayAnalysis(filteredTxns, chain, address);
+        quirkyStats.textContent=filtered.length?`Min ${Math.min(...filtered.map(t=>parseFloat(t.value)/1e18)).toFixed(4)} ETH, Max ${Math.max(...filtered.map(t=>parseFloat(t.value)/1e18)).toFixed(4)} ETH`:'N/A';
 
-         } catch (error) { // Error Handling
-             console.error("Error during analysis:", error);
-             let userErrorMessage = error.message || 'Something went kaboom.';
-             if (error instanceof TypeError && error.message.toLowerCase().includes('failed to fetch')) { userErrorMessage = "Network Error: Couldn't reach the API server."; } else if (error.message.includes('API says nope')) { userErrorMessage = error.message; } else if (error instanceof SyntaxError) { userErrorMessage = "Code syntax error detected."; }
-             showFeedback(`Blast! ${userErrorMessage}`, 'error');
-             // Ensure UI reset uses locally scoped variables with null checks
-             if(resultsSection) resultsSection.classList.remove('hidden'); if(resultsOutput) { resultsOutput.classList.remove('hidden'); resultsOutput.innerHTML = `<p class="text-red-600 text-center p-6">Couldn't fetch the story: ${userErrorMessage}</p>`; }
-             if(transactionDataArea) transactionDataArea.classList.add('hidden'); if(gasByDappSection) gasByDappSection.classList.add('hidden'); if(valueRankingDiv) valueRankingDiv.classList.add('hidden'); if(sybilDisclaimer) sybilDisclaimer.classList.add('hidden'); if(chainStoryBox) chainStoryBox.classList.add('hidden');
-             [periodSummaryBox, activityHighlightBox, favoriteDappBox, streakInfoBox].forEach(box => box?.classList.add('hidden'));
-         } finally {
-             trackButton.disabled = false; trackButton.classList.remove('loading'); console.log("Finally block executed.");
-         }
+        resultsTableBody.innerHTML='';
+        filtered.forEach(t=>{
+          const d=new Date(t.timeStamp*1000);
+          const v=parseFloat(t.value)/1e18;
+          const note=t.isError==='1'?'❌':v<0.0001?'🚩':'';
+          const row=document.createElement('tr');
+          row.innerHTML = `
+            <td>${d.toLocaleString()}</td>
+            <td><i class="ri-swap-line"></i></td>
+            <td><a href="https://abscan.org/address/${t.to}" target="_blank" class="text-primary">${t.to.slice(0,6)}...${t.to.slice(-4)}</a></td>
+            <td>${formatETH(v)}</td>
+            <td>${formatUSD(v)}</td>
+            <td>${note}</td>
+            <td><a href="https://abscan.org/tx/${t.hash}" target="_blank" class="text-primary">🔗</a></td>
+          `;
+          resultsTableBody.appendChild(row);
+        });
+
+        document.getElementById('results-section').classList.remove('hidden');
+      }
+
+      trackButton.addEventListener('click',async()=>{
+        trackButton.classList.add('loading');showFeedback('Loading...');
+        const addr=walletInput.value.trim();
+        if(!addr){showFeedback('Enter address','error');trackButton.classList.remove('loading');return;}
+        try{const txs=await fetchTransactions(addr);if(!txs.length)showFeedback('No txns','error');else{showFeedback(`Analyzed ${txs.length}`);await displayAnalysis(txs);}}catch(e){showFeedback(e.message,'error');}finally{trackButton.classList.remove('loading');}
       });
 
-       // --- Static Event Listeners for Download/Share ---
-       if (downloadCsvBtn) { downloadCsvBtn.addEventListener('click', downloadCSV); } else { console.error("Download button not found"); }
-       if (shareTwitterBtn) { shareTwitterBtn.addEventListener('click', shareToTwitter); } else { console.error("Share button not found"); }
+      currentTime.textContent=new Date().toLocaleTimeString();
 
-    </script>
+      downloadBtn.addEventListener('click',()=>{
+        if(!currentFilteredTxs.length)return showFeedback('No data','error');
+        const headers=['When','Action','To','ETH','USD','Notes','Link'];
+        const rows=currentFilteredTxs.map(t=>{
+          const d=new Date(t.timeStamp*1000).toLocaleString();
+          const v=parseFloat(t.value)/1e18;
+          const note=t.isError==='1'?'Error':v<0.0001?'Tiny':'';
+          const link=`https://etherscan.io/tx/${t.hash}`;
+          return [d,'Tx',t.to,v.toFixed(4),(v*3000).toFixed(2),note,link].join(',');
+        });
+        const blob=new Blob([headers.join(','),'\n',rows.join('\n')],{type:'text/csv'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=url;a.download='nebula.csv';a.click();URL.revokeObjectURL(url);
+      });
 
+      shareResultsBtn.addEventListener('click', () => {
+        const suspiciousCount = suspiciousFlags.textContent || '0';
+        const txt = `I uncovered ${suspiciousCount} suspicious transactions on my Abstract wallet! 🐧 Dive in at Nebula.`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`;
+        window.open(url, '_blank');
+      });
+    });
+  </script>
 </body>
 </html>
